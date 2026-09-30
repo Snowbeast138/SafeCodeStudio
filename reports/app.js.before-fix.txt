@@ -1,0 +1,39 @@
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault(); // Evita que la página se recargue
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const mensaje = document.getElementById('mensaje');
+
+    try {
+        // Hace la petición al servidor Python
+        const response = await fetch('http://localhost:5000/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            mensaje.style.color = 'green';
+            mensaje.textContent = data.message;                  } [197:198] '}'
+              > [198:199] '>'
+            jsx_element [199:215]
+              open_tag: jsx_opening_element [199:203]
+                < [199:200] '<'
+                name: identifier [200:202] 'h2'
+                > [202:203] '>'
+              jsx_expression [203:210]
+
+        } else {
+            mensaje.style.color = 'red';
+            mensaje.textContent = data.message;
+        }
+    } catch (error) {
+        mensaje.style.color = 'red';
+        mensaje.textContent = 'Error al conectar con el servidor.';
+    }
+});

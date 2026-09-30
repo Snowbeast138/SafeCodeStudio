@@ -1,0 +1,158 @@
+<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SafeCode · Relaciones de archivos</title>
+<link rel="icon" type="image/svg+xml" href="__BRAND_ICON__"><style>
+*{box-sizing:border-box}body{margin:0;background:#101621;color:#e4eaf2;font:15px system-ui}header,main{padding:24px;max-width:1500px;margin:auto}header{border-bottom:1px solid #334155}h1{font-size:25px;margin:8px 0}h2{font-size:18px}p{color:#aebed0}label{display:inline-block;margin:8px 16px 8px 0}select{display:block;padding:10px;background:#1d293a;color:white;border:1px solid #52647a;border-radius:6px;max-width:90vw}section{background:#172131;border:1px solid #334155;border-radius:10px;padding:18px;margin:16px 0}.layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:16px}#canvas{overflow:auto}svg{display:block;width:100%;min-width:480px}.node{cursor:pointer}.node rect{fill:#25374b;stroke:#637990}.node text{fill:#e4eaf2;font-size:12px}.node.active rect{stroke:#6ee7b7;stroke-width:3}.edge{fill:none;stroke:#8196b3;stroke-width:1.6}.edge.active{stroke:#6ee7b7;stroke-width:2.6}.group{fill:#111c2b;stroke:#354860}.group-label{fill:#8db5dd;font-size:13px}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#101621;padding:12px}summary{cursor:pointer;padding:8px 0;overflow-wrap:anywhere}li{margin:10px 0;overflow-wrap:anywhere}.badge{color:#6ee7b7}#detail{overflow-wrap:anywhere}@media(max-width:800px){.layout{display:block}header,main{padding:15px}}a{color:#8dc6ff}
+
+/* Focused adjacency view: no global edge crossings or scaled-down labels. */
+.layout{display:block}.layout>section{min-width:0}#detail{max-height:520px;overflow:auto}
+#root{overflow-wrap:anywhere}#canvas{overflow:visible;container-type:inline-size}
+.focus-strip p,.lane-caption,.focus-note{font-size:13px;line-height:1.6}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;color:#7bc8b2}
+.relation-search{display:block;margin:16px 0 24px;font-size:12px;color:#aebed0}
+.relation-search input{display:block;width:100%;max-width:440px;margin-top:8px;background:#101a29;border:1px solid #43556b;color:#e4eaf2;padding:11px 12px;border-radius:6px;font:inherit;font-size:14px}
+.focus-diagram{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr) minmax(0,1fr);gap:30px;align-items:start}
+.relation-lane{min-width:0}.relation-lane h3{font-size:15px;margin:0 0 8px}.lane-caption{min-height:42px;margin:0 0 18px}
+.relation-list{display:grid;gap:9px}.file-card{width:100%;text-align:left;display:grid;gap:7px;background:#1b2b3f;border:1px solid #364b63;border-radius:8px;padding:13px 14px;color:#e4eaf2;cursor:pointer;font:inherit;min-width:0;position:relative}
+.file-card:hover{background:#243b50;border-color:#79b8ac}.file-card strong{font-size:14px;overflow-wrap:anywhere;font-weight:600}.file-path{font-size:12px;color:#b1c2d5;overflow-wrap:anywhere}.file-meta{font-size:11px;color:#8fa8bf;line-height:1.5;overflow-wrap:anywhere}
+.focus-center{margin-top:80px;padding:20px 16px;border:1px solid #64c9aa;border-radius:10px;background:#142e30;position:relative}
+.focus-center:before,.focus-center:after{content:'→';position:absolute;top:34px;color:#64c9aa;font-size:22px}.focus-center:before{left:-24px}.focus-center:after{right:-24px}
+.focus-center h3{font-size:17px;overflow-wrap:anywhere;margin:14px 0 8px}.focus-path{font-size:12px;overflow-wrap:anywhere;line-height:1.6}.direction-hint{font-size:11px;color:#a3d7ca;margin-bottom:0}
+.lane-pagination{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:14px;font-size:11px;color:#b1c2d5}.lane-pagination button{border:1px solid #40516a;background:#213148;color:#e4eaf2;border-radius:5px;min-width:34px;min-height:32px;cursor:pointer}.lane-pagination button:disabled{opacity:.3;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #7ee7c3;outline-offset:3px}
+.empty-state{font-size:13px;padding:16px;border:1px dashed #40516a;border-radius:8px;line-height:1.6}.focus-note{border-top:1px solid #334155;padding-top:18px;margin-top:24px}.boundary-details{margin-top:20px}
+@container(max-width:680px){.focus-diagram{grid-template-columns:minmax(0,1fr);gap:24px}.focus-center{order:-1;margin:0}.focus-center:before,.focus-center:after{display:none}.direction-hint{display:none}.lane-caption{min-height:0}.relation-list{border-left:2px solid #365b61;padding-left:12px}.file-card:before{content:'';position:absolute;width:12px;height:1px;background:#365b61;left:-13px;top:24px}}
+@media(max-width:480px){header,main{padding:12px}section{padding:13px}h1{font-size:21px}select{width:100%;max-width:100%}main>label{display:block;margin-right:0}.layout{gap:0}}
+
+/* SafeCode brand and semantic accents. All assets remain offline. */
+:root{color-scheme:dark;--blue:#77baff;--teal:#67d9cd;--violet:#c3a6ff;--amber:#f4c276}
+body{background:radial-gradient(ellipse at 12% 0%,#173344 0,transparent 42%),#0b1320;color:#e7eef8}
+header{padding-top:30px;border-bottom:1px solid #2b485a}h1{font-size:30px;letter-spacing:-.035em;margin-top:24px}header>p{line-height:1.6}
+.brand-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.brand-logo{display:inline-flex;background:linear-gradient(125deg,#d5e7ee,#b5ded4);border:1px solid #8bbfb7;border-radius:14px;padding:5px 15px}.brand-logo img{width:250px;height:auto;display:block}.badge{font-size:10px;letter-spacing:.14em;font-weight:700;padding:8px 12px;border:1px solid #315961;border-radius:30px;background:#133335;color:#9aead5}
+#root{display:flex;align-items:center;gap:10px;font:12px ui-monospace,monospace;padding:12px 14px;background:#111f30;border-radius:8px;width:fit-content;max-width:100%;border:1px solid #2d4056;color:#b6cbe1}
+section{border:1px solid #2c4058;background:linear-gradient(145deg,#172639,#142030);border-radius:14px;box-shadow:0 8px 22px #04091420}h2{font-size:17px;display:flex;gap:10px;align-items:center;color:#dcecff}
+.ui-icon{display:inline-block;flex-shrink:0;width:19px;height:19px;min-width:0;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:middle;margin-right:8px}h2 .ui-icon,#root .ui-icon{color:var(--teal)}
+.metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:24px 0 16px}.metric{display:flex;gap:10px;align-items:center;padding:18px;border:1px solid #2b4965;background:#11263a;border-radius:12px;border-top:2px solid var(--blue)}.metric.graph{background:#112d30;border-color:#315a58;border-top-color:var(--teal)}.metric.boundary{background:#272339;border-color:#4a3e61;border-top-color:var(--violet)}.metric .ui-icon{width:27px;height:27px;color:var(--blue)}.metric.graph .ui-icon{color:var(--teal)}.metric.boundary .ui-icon{color:var(--violet)}.metric strong{display:block;font-size:25px;line-height:1.2}.metric span{display:block;margin-top:5px;color:#b4c8dc;font-size:12px}
+select{border-color:#39566f;border-radius:8px;background:#14283c;min-height:42px}select:hover{border-color:#65b7bd}main>label{font-size:12px;color:#b8ccdf;line-height:2.2}
+.incoming h3{color:var(--blue)}.outgoing h3{color:var(--teal)}.incoming .file-card{border-left:3px solid #5699d2}.outgoing .file-card{border-left:3px solid #4cad9d}.file-card{background:#1a2d43;transition:background .15s,border-color .15s;box-shadow:0 2px 6px #050b141c}.file-card:hover{background:#24405a;border-color:#84c0e7}.file-card strong{line-height:1.5}.file-card .ui-icon{width:15px;height:15px;color:#9fbbd3}.language-chip{justify-self:start;font:bold 10px ui-monospace,monospace;letter-spacing:.06em;border-radius:4px;padding:3px 6px;background:#314156;color:#d2dcea}.language-chip.typescript,.language-chip.tsx{background:#183f64;color:#94cdff}.language-chip.javascript{background:#4a4023;color:#f9db78}.language-chip.python{background:#233f43;color:#a3dfd7}
+.focus-center{background:linear-gradient(140deg,#14413f,#15313b);border-color:#65c9b6;box-shadow:0 0 28px #43bda014}.focus-center h3{color:#c4ffed}.focus-center .ui-icon{color:#83dfca}.relation-search .ui-icon{width:15px;height:15px;color:#87b7cb}.relation-search input{background:#0c1c2c;border-color:#35546c}.relation-search input:focus{border-color:#6bd5c4}
+#detail{border-top:2px solid var(--blue)}#detail h3{color:var(--blue)}#detail details{padding:0 10px;border:1px solid #2c435c;border-radius:7px;margin:8px 0;background:#112237}#detail details[open]{border-color:#467a91;background:#10293b}#detail summary{font-size:13px;line-height:1.6}#detail summary::marker{color:var(--teal)}#detail pre{border-left:2px solid #58bba4;border-radius:5px;color:#c0ecdb}#unresolved{max-height:350px;overflow:auto;font-size:13px;line-height:1.7;color:#dec8a6}.boundary-details summary{color:var(--violet)}.lane-pagination button:hover:not(:disabled){background:#304c68;border-color:#87c4d2}.lane-pagination button{min-height:36px;min-width:36px}
+@media(max-width:480px){h1{font-size:24px}.brand-logo img{width:210px}.brand-row{gap:12px}.metric-grid{gap:7px}.metric{display:block;padding:12px 9px}.metric strong{font-size:22px}.metric .ui-icon{width:20px;height:20px;margin-bottom:8px}.metric span{font-size:11px}#root{font-size:11px}.badge{font-size:9px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+#detail{max-height:none;overflow:visible;container-type:inline-size}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.detail-group{min-width:0}#detail .incoming h3{color:var(--blue)}#detail .outgoing h3{color:var(--teal)}
+.detail-list{max-height:420px;overflow:auto;scrollbar-gutter:stable;padding-right:6px}
+.detail-list:focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
+#detail .incoming details{border-left:3px solid #5699d2}#detail .outgoing details{border-left:3px solid #4cad9d}
+@container(max-width:680px){.detail-grid{grid-template-columns:minmax(0,1fr);gap:20px}.detail-list{max-height:340px}}
+</style><header><div class="brand-row"><div class="brand-logo"><img src="__BRAND_LOGO__" alt="SafeCode Studio" width="280" height="98"></div><span class="badge">ANÁLISIS DE DEPENDENCIAS</span></div><h1>Relaciones entre archivos</h1><p>Importador → dependencia · Evidencia del CST · Snapshot estático</p><div id="root"></div></header><main><label>Subgrafo de carpeta<select id="directory"></select></label><label>Archivo<select id="file"></select></label><div id="metrics" class="metric-grid" aria-label="Resumen del análisis"></div><p>Sin aristas locales no significa ausencia de dependencias externas o dinámicas. Los archivos de otros formatos se muestran sin analizar.</p><div class="layout"><section><h2>Mapa de dependencias</h2><div id="canvas"></div><details class="boundary-details"><summary>Relaciones de frontera de la carpeta</summary><ul id="boundary"></ul></details></section><section id="detail"></section></div><section><h2>Referencias no resueltas localmente</h2><ul id="unresolved"></ul></section><section><details><summary>Errores y exclusiones del análisis</summary><pre id="issues"></pre></details></section></main><script type="application/json" id="data">__GRAPH_DATA__</script><script>
+const report=JSON.parse(document.getElementById('data').textContent);
+const $=id=>document.getElementById(id), allEdges=[...report.edges,...report.boundary_edges];
+let visible=[],edges=[],boundary=[],selected='';
+const nodeMap=new Map([...report.nodes,...report.boundary_nodes].map(n=>[n.id,n]));
+function el(tag,text,parent){const e=document.createElement(tag);if(text!==undefined)e.textContent=text;if(parent)parent.append(e);return e}
+const ICONS={file:'M6 3h8l4 4v14H6z M14 3v5h5',folder:'M3 6h6l2 2h10v12H3z',incoming:'M4 5h5v5 M4 5l7 7 M20 5h-5v5 M20 5l-7 7 M12 12v9',outgoing:'M12 21v-9 M11 12L4 5 M4 10V5h5 M13 12l7-7 M15 5h5v5',focus:'M8 3H3v5 M16 3h5v5 M3 16v5h5 M21 16v5h-5 M8 8h8v8H8z',graph:'M5 5h4v4H5z M15 15h4v4h-4z M5 15h4v4H5z M7 9v6 M9 7h8v8',boundary:'M12 3v18 M4 8h16 M16 4l4 4-4 4 M20 16H4 M8 12l-4 4 4 4',search:'M10 3a7 7 0 1 0 0 14a7 7 0 1 0 0-14 M15 15l6 6',alert:'M12 3L2 21h20z M12 9v5 M12 17v1'};
+function icon(name){const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('class','ui-icon');svg.setAttribute('aria-hidden','true');const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',ICONS[name]||ICONS.file);svg.append(path);return svg}
+function languageLabel(n){return ({python:'PY',javascript:'JS',typescript:'TS',tsx:'TSX'})[n?.language]||'FILE'}
+function renderMetrics(){const box=$('metrics');box.replaceChildren();for(const[label,value,kind]of [['Archivos',visible.length,'file'],['Relaciones internas',edges.length,'graph'],['Cruzan carpetas',boundary.length,'boundary']]){const card=el('div',undefined,box);card.className='metric '+kind;card.append(icon(kind));const text=el('div',undefined,card);el('strong',String(value),text);el('span',label,text)}}
+$('root').textContent=report.root;$('root').prepend(icon('folder'));
+for(const h of document.querySelectorAll('main h2'))h.prepend(icon(h.textContent.includes('resueltas')?'alert':'graph'));
+
+for(const d of report.directories){const o=el('option',`${d.path} (${d.members.length})`,$('directory'));o.value=d.path}
+$('directory').value=report.selected_directory;
+$('issues').textContent=JSON.stringify({issues:report.issues,excluded:report.excluded},null,2);
+function selectFile(id){
+ selected=id;relationshipQuery='';pages.incoming=pages.outgoing=0;
+ const existing=[...$('file').options].some(o=>o.value===id);
+ for(const o of [...$('file').options])if(o.dataset.external)o.remove();
+ if(!existing||!visible.some(n=>n.id===id)){const o=el('option',`${nodeMap.get(id)?.path} (fuera de carpeta)`,$('file'));o.value=id;o.dataset.external='true'}
+ $('file').value=id;draw();detail();
+}
+function detail(){
+ const box=$('detail');box.replaceChildren();const n=nodeMap.get(selected);
+ if(!n){el('h2','Carpeta sin archivos',box);return}
+ el('h2',n.path,box);el('p',`${n.language||'Sin parser'} · ${n.status}`,box);
+ if(n.cst)el('p',`${n.cst.nodes} nodos CST · ${n.cst.diagnostics.length} diagnósticos`,box);
+ const grid=el('div',undefined,box);grid.className='detail-grid';
+ for(const direction of ['incoming','outgoing']){
+  const incoming=direction==='incoming',title=incoming?'Lo importan':'Importa a';
+  const allLinks=allEdges.filter(e=>(incoming?e.target:e.source)===selected);
+  const links=allLinks.filter(e=>matchesRelationship(incoming?e.source:e.target));
+  const group=el('div',undefined,grid);group.className='detail-group '+direction;
+  const heading=el('h3',`${title} (${relationshipQuery?`${links.length} de ${allLinks.length}`:links.length})`,group);heading.prepend(icon(direction));
+  el('p',incoming?'Referencias desde otros archivos hacia este archivo.':'Referencias de este archivo hacia sus dependencias.',group).className='lane-caption';
+  const list=el('div',undefined,group);list.className='detail-list';list.tabIndex=0;list.setAttribute('role','region');list.setAttribute('aria-label',`Evidencia: ${title}`);
+  for(const e of links){
+   const d=el('details',undefined,list);
+   el('summary',`${nodeMap.get(e.source)?.path} → ${nodeMap.get(e.target)?.path}${e.source===e.target?' · Autorreferencia':''}`,d);
+   el('p',`${e.kind} · línea ${e.evidence.start.line} · CST #${e.evidence.id}`,d);el('pre',e.evidence.text,d);
+  }
+  if(!links.length)el('p',relationshipQuery&&allLinks.length?'Sin coincidencias para esta búsqueda.':'Sin relaciones locales detectadas.',list).className='empty-state';
+ }
+}
+function update(){pages.incoming=pages.outgoing=0;relationshipQuery='';const group=report.directories.find(d=>d.path===$('directory').value),ids=new Set(group.members);visible=report.nodes.filter(n=>ids.has(n.id));edges=allEdges.filter(e=>ids.has(e.source)&&ids.has(e.target));boundary=allEdges.filter(e=>ids.has(e.source)!==ids.has(e.target));$('file').replaceChildren();for(const n of visible){const o=el('option',n.path,$('file'));o.value=n.id}if(!ids.has(selected))selected=visible[0]?.id||'';$('file').value=selected;renderMetrics();$('boundary').replaceChildren();for(const e of boundary)el('li',`${nodeMap.get(e.source)?.path} → ${nodeMap.get(e.target)?.path}`,$('boundary'));if(!boundary.length)el('li','Sin relaciones de frontera detectadas.',$('boundary'));$('unresolved').replaceChildren();const unresolved=report.references.filter(r=>ids.has(r.source)&&r.status!=='resolved_local');for(const r of unresolved)el('li',`${nodeMap.get(r.source)?.path}:${r.evidence.start.line} · ${r.specifier??'Expresión dinámica'} · ${r.reason}`,$('unresolved'));if(!unresolved.length)el('li','Sin referencias pendientes detectadas.',$('unresolved'));draw();detail()}
+const pages={incoming:0,outgoing:0};
+let relationshipQuery='';
+const PAGE_SIZE=8;
+function matchesRelationship(id){return (nodeMap.get(id)?.path||id).toLowerCase().includes(relationshipQuery.toLowerCase())}
+function related(direction){
+ const groups=new Map();
+ for(const e of allEdges){
+  if((direction==='incoming'?e.target:e.source)!==selected)continue;
+  const id=direction==='incoming'?e.source:e.target;
+  if(!groups.has(id))groups.set(id,[]);
+  groups.get(id).push(e);
+ }
+ return [...groups].sort((a,b)=>(nodeMap.get(a[0])?.path||a[0]).localeCompare(nodeMap.get(b[0])?.path||b[0]));
+}
+function relationLane(direction,host){
+ const lane=el('div',undefined,host);lane.className='relation-lane '+direction;
+ const entries=related(direction),filtered=entries.filter(([id])=>matchesRelationship(id));
+ const title=direction==='incoming'?'Lo importan':'Importa a';
+ const heading=el('h3',`${title} · ${entries.length}`,lane);heading.prepend(icon(direction==='incoming'?'incoming':'outgoing'));
+ el('p',direction==='incoming'?'Estos archivos dependen del seleccionado.':'El seleccionado depende de estos archivos.',lane).className='lane-caption';
+ const list=el('div',undefined,lane);list.className='relation-list';
+ const last=Math.max(0,Math.ceil(filtered.length/PAGE_SIZE)-1);pages[direction]=Math.min(pages[direction],last);
+ for(const[id,refs]of filtered.slice(pages[direction]*PAGE_SIZE,(pages[direction]+1)*PAGE_SIZE)){
+  const n=nodeMap.get(id),button=el('button',undefined,list);button.type='button';button.className='file-card';button.title=n?.path||id;
+  button.setAttribute('aria-label',`Explorar ${n?.path||id}`);
+  const name=el('strong',n?.path.split('/').pop()||id,button);const badge=el('span',languageLabel(n),button);badge.className='language-chip '+(n?.language||'asset');button.prepend(badge);name.prepend(icon('file'));
+  el('span',n?.directory||'.',button).className='file-path';
+  const outside=!visible.some(n=>n.id===id);
+  el('span',`${refs.length} referencia${refs.length===1?'':'s'}${outside?' · Fuera de esta carpeta':''}${id===selected?' · Autorreferencia':''}`,button).className='file-meta';
+  button.addEventListener('click',()=>selectFile(id));
+ }
+ if(!filtered.length)el('p',entries.length?'Sin coincidencias.':'Sin relaciones locales detectadas.',list).className='empty-state';
+ const nav=el('div',undefined,lane);nav.className='lane-pagination';
+ const prev=el('button','←',nav);prev.type='button';prev.disabled=pages[direction]===0;prev.setAttribute('aria-label',`Página anterior: ${title}`);
+ el('span',`${filtered.length?pages[direction]+1:0} / ${filtered.length?last+1:0} · ${filtered.length} archivos`,nav);
+ const next=el('button','→',nav);next.type='button';next.disabled=pages[direction]>=last;next.setAttribute('aria-label',`Página siguiente: ${title}`);
+ prev.addEventListener('click',()=>{pages[direction]--;draw()});next.addEventListener('click',()=>{pages[direction]++;draw()});
+}
+function draw(){
+ const host=$('canvas');host.replaceChildren();
+ const n=nodeMap.get(selected);
+ if(!n){el('p','Selecciona una carpeta con archivos para explorar sus relaciones.',host);return}
+ const strip=el('div',undefined,host);strip.className='focus-strip';
+ el('span','RELACIONES DIRECTAS',strip).className='eyebrow';
+ el('p','Cada tarjeta es un archivo. Selecciónala para seguir sus dependencias; la evidencia completa permanece en el detalle.',strip);
+ const label=el('label','Buscar entre las relaciones',strip);label.className='relation-search';
+ label.prepend(icon('search'));const input=el('input',undefined,label);input.type='search';input.placeholder='Nombre o ruta del archivo';input.value=relationshipQuery;
+ input.addEventListener('input',()=>{relationshipQuery=input.value;pages.incoming=pages.outgoing=0;drawRelations(host);detail()});
+ drawRelations(host);
+}
+function drawRelations(host){
+ const n=nodeMap.get(selected);
+ host.querySelector('.focus-diagram')?.remove();host.querySelector('.focus-note')?.remove();
+ const diagram=el('div',undefined,host);diagram.className='focus-diagram';
+ relationLane('incoming',diagram);
+ const center=el('div',undefined,diagram);center.className='focus-center';
+ el('span','ARCHIVO SELECCIONADO',center).className='eyebrow';
+ const focusTitle=el('h3',n.path.split('/').pop(),center);focusTitle.prepend(icon('focus'));el('p',n.path,center).className='focus-path';
+ el('span',`${n.language||'Sin parser'} · ${n.status}`,center).className='file-meta';
+ el('p','← Lo importan  ·  Importa a →',center).className='direction-hint';
+ relationLane('outgoing',diagram);
+ const notice=el('p',`Vista de un salto: ${related('incoming').length} archivos entrantes y ${related('outgoing').length} salientes. Las conexiones entre otros archivos no se dibujan aquí.`,host);notice.className='focus-note';
+}
+$('directory').addEventListener('change',update);$('file').addEventListener('change',()=>selectFile($('file').value));update();
+</script></html>

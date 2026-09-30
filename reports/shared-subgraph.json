@@ -1,0 +1,312 @@
+{
+  "schema_version": 1,
+  "root": "/home/snow/Desktop/Projects/SafeCode/examples/graph-demo",
+  "selected_directory": "frontend/shared",
+  "direction": "importer -> dependency",
+  "rebuild": "full_snapshot",
+  "status": "complete_for_supported_scope",
+  "nodes": [
+    {
+      "id": "file:frontend/shared/format.js",
+      "path": "frontend/shared/format.js",
+      "directory": "frontend/shared",
+      "language": "javascript",
+      "status": "parsed",
+      "sha256": "245a642da5a5660a69526a19ad9595cf4ee32450f305682684942b70697c6b25",
+      "cst": {
+        "nodes": 30,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "file:frontend/shared/index.ts",
+      "path": "frontend/shared/index.ts",
+      "directory": "frontend/shared",
+      "language": "typescript",
+      "status": "parsed",
+      "sha256": "093d695fb0434044324be29bb6122de3aa2a4ea9f40443e4fc3d6c180c2d2bea",
+      "cst": {
+        "nodes": 28,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "file:frontend/shared/types.ts",
+      "path": "frontend/shared/types.ts",
+      "directory": "frontend/shared",
+      "language": "typescript",
+      "status": "parsed",
+      "sha256": "17d463181ab3643c0ed24d9fd5642301576ae69ee10d4f1d5f46b02cfcef5922",
+      "cst": {
+        "nodes": 22,
+        "diagnostics": []
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "ref:11",
+      "source": "file:frontend/shared/index.ts",
+      "target": "file:frontend/shared/format.js",
+      "kind": "reexport",
+      "specifier": "./format.js",
+      "evidence": {
+        "id": 15,
+        "type": "export_statement",
+        "start_byte": 37,
+        "end_byte": 73,
+        "start": {
+          "line": 2,
+          "byte_column": 0
+        },
+        "end": {
+          "line": 2,
+          "byte_column": 36
+        },
+        "has_error": false,
+        "text": "export { label } from \"./format.js\";"
+      },
+      "type_only": false,
+      "resolution": "static_file_candidate"
+    },
+    {
+      "id": "ref:10",
+      "source": "file:frontend/shared/index.ts",
+      "target": "file:frontend/shared/types.ts",
+      "kind": "reexport",
+      "specifier": "./types",
+      "evidence": {
+        "id": 1,
+        "type": "export_statement",
+        "start_byte": 0,
+        "end_byte": 36,
+        "start": {
+          "line": 1,
+          "byte_column": 0
+        },
+        "end": {
+          "line": 1,
+          "byte_column": 36
+        },
+        "has_error": false,
+        "text": "export type { Task } from \"./types\";"
+      },
+      "type_only": true,
+      "resolution": "static_file_candidate"
+    }
+  ],
+  "directories": [
+    {
+      "id": "dir:frontend/shared",
+      "path": "frontend/shared",
+      "parent": "dir:frontend",
+      "members": [
+        "file:frontend/shared/format.js",
+        "file:frontend/shared/index.ts",
+        "file:frontend/shared/types.ts"
+      ],
+      "direct_files": [
+        "file:frontend/shared/format.js",
+        "file:frontend/shared/index.ts",
+        "file:frontend/shared/types.ts"
+      ]
+    }
+  ],
+  "boundary_edges": [
+    {
+      "id": "ref:3",
+      "source": "file:frontend/components/Card.tsx",
+      "target": "file:frontend/shared/format.js",
+      "kind": "import",
+      "specifier": "../shared/format.js",
+      "evidence": {
+        "id": 16,
+        "type": "import_statement",
+        "start_byte": 45,
+        "end_byte": 89,
+        "start": {
+          "line": 2,
+          "byte_column": 0
+        },
+        "end": {
+          "line": 2,
+          "byte_column": 44
+        },
+        "has_error": false,
+        "text": "import { label } from \"../shared/format.js\";"
+      },
+      "type_only": false,
+      "resolution": "static_file_candidate"
+    },
+    {
+      "id": "ref:2",
+      "source": "file:frontend/components/Card.tsx",
+      "target": "file:frontend/shared/types.ts",
+      "kind": "import",
+      "specifier": "../shared/types",
+      "evidence": {
+        "id": 1,
+        "type": "import_statement",
+        "start_byte": 0,
+        "end_byte": 44,
+        "start": {
+          "line": 1,
+          "byte_column": 0
+        },
+        "end": {
+          "line": 1,
+          "byte_column": 44
+        },
+        "has_error": false,
+        "text": "import type { Task } from \"../shared/types\";"
+      },
+      "type_only": true,
+      "resolution": "static_file_candidate"
+    },
+    {
+      "id": "ref:5",
+      "source": "file:frontend/main.ts",
+      "target": "file:frontend/shared/format.js",
+      "kind": "import",
+      "specifier": "./shared/format.js",
+      "evidence": {
+        "id": 16,
+        "type": "import_statement",
+        "start_byte": 47,
+        "end_byte": 90,
+        "start": {
+          "line": 2,
+          "byte_column": 0
+        },
+        "end": {
+          "line": 2,
+          "byte_column": 43
+        },
+        "has_error": false,
+        "text": "import { label } from \"./shared/format.js\";"
+      },
+      "type_only": false,
+      "resolution": "static_file_candidate"
+    },
+    {
+      "id": "ref:4",
+      "source": "file:frontend/main.ts",
+      "target": "file:frontend/shared/types.ts",
+      "kind": "import",
+      "specifier": "./shared/types.js",
+      "evidence": {
+        "id": 1,
+        "type": "import_statement",
+        "start_byte": 0,
+        "end_byte": 46,
+        "start": {
+          "line": 1,
+          "byte_column": 0
+        },
+        "end": {
+          "line": 1,
+          "byte_column": 46
+        },
+        "has_error": false,
+        "text": "import type { Task } from \"./shared/types.js\";"
+      },
+      "type_only": true,
+      "resolution": "static_file_candidate"
+    }
+  ],
+  "boundary_nodes": [
+    {
+      "id": "file:frontend/components/Card.tsx",
+      "path": "frontend/components/Card.tsx",
+      "directory": "frontend/components",
+      "language": "tsx",
+      "status": "parsed",
+      "sha256": "479cf30ea258509623ad34ba249a9dd47c92ebc7ffec7621148c28fc6c7b041c",
+      "cst": {
+        "nodes": 76,
+        "diagnostics": []
+      }
+    },
+    {
+      "id": "file:frontend/main.ts",
+      "path": "frontend/main.ts",
+      "directory": "frontend",
+      "language": "typescript",
+      "status": "parsed",
+      "sha256": "935275ab55b23ba67c84aa58514b0db3930e11c906bf698c040a3d42258a6070",
+      "cst": {
+        "nodes": 77,
+        "diagnostics": []
+      }
+    }
+  ],
+  "references": [
+    {
+      "id": "ref:10",
+      "source": "file:frontend/shared/index.ts",
+      "kind": "reexport",
+      "specifier": "./types",
+      "evidence": {
+        "id": 1,
+        "type": "export_statement",
+        "start_byte": 0,
+        "end_byte": 36,
+        "start": {
+          "line": 1,
+          "byte_column": 0
+        },
+        "end": {
+          "line": 1,
+          "byte_column": 36
+        },
+        "has_error": false,
+        "text": "export type { Task } from \"./types\";"
+      },
+      "type_only": true,
+      "status": "resolved_local",
+      "candidates": [
+        "frontend/shared/types.ts"
+      ],
+      "reason": "static_file_candidate"
+    },
+    {
+      "id": "ref:11",
+      "source": "file:frontend/shared/index.ts",
+      "kind": "reexport",
+      "specifier": "./format.js",
+      "evidence": {
+        "id": 15,
+        "type": "export_statement",
+        "start_byte": 37,
+        "end_byte": 73,
+        "start": {
+          "line": 2,
+          "byte_column": 0
+        },
+        "end": {
+          "line": 2,
+          "byte_column": 36
+        },
+        "has_error": false,
+        "text": "export { label } from \"./format.js\";"
+      },
+      "type_only": false,
+      "status": "resolved_local",
+      "candidates": [
+        "frontend/shared/format.js"
+      ],
+      "reason": "static_file_candidate"
+    }
+  ],
+  "issues": [],
+  "excluded": [],
+  "isolated_files": [],
+  "cyclic_components": [],
+  "metrics": {
+    "files": 3,
+    "edges": 2,
+    "directories": 1,
+    "boundary_edges": 4
+  },
+  "csts": {}
+}

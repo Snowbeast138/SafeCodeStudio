@@ -1,0 +1,5 @@
+{
+  "forbidden": [
+    {"from": "ui/*", "to": "data/*"}
+  ]
+}

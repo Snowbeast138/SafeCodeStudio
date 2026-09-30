@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "safecode-core"
+version = "0.3.0"
+description = "CST-backed multilanguage dependency graph for SafeCode Studio"
+requires-python = ">=3.11"
+dependencies = ["tree-sitter==0.25.2", "tree-sitter-python==0.25.0", "tree-sitter-javascript==0.25.0", "tree-sitter-typescript==0.23.2", "networkx==3.4.2"]
+
+[project.optional-dependencies]
+dev = ["pytest==8.4.2"]
+
+[project.scripts]
+safecode-graph = "safecode_core.graph_cli:main"
+safecode-cst = "safecode_core.cst_cli:main"
+safecode-core = "safecode_core.cli:main"
+safecode-security = "safecode_core.security_cli:main"
+safecode-workspace = "safecode_core.workspace_cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.setuptools.package-data]
+safecode_core = ["assets/*.html", "assets/*.png"]

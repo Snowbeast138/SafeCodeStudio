@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-09-30T04:17:09.022766+00:00",
+  "root": "/home/snow/Desktop/Projects/SafeCode/examples/security-demo/current",
+  "baseline": "/home/snow/Desktop/Projects/SafeCode/examples/security-demo/baseline",
+  "policy": "/home/snow/Desktop/Projects/SafeCode/examples/security-demo/policy.json",
+  "status": "complete_for_supported_scope",
+  "coverage": {
+    "SEG-01": "analyzed",
+    "SEG-02": "analyzed",
+    "SEG-03": "analyzed",
+    "ARQ-01": "analyzed",
+    "ARQ-02": "analyzed"
+  },
+  "metrics": {
+    "files": 4,
+    "parsed_files": 4,
+    "findings": 6,
+    "by_rule": {
+      "SEG-03": 1,
+      "SEG-01": 2,
+      "SEG-02": 1,
+      "ARQ-01": 1,
+      "ARQ-02": 1
+    }
+  },
+  "findings": [
+    {
+      "rule_id": "SEG-03",
+      "title": "Credencial literal",
+      "severity": "medium",
+      "confidence": "pattern",
+      "path": "backend/check.py",
+      "language": "python",
+      "start": {
+        "line": 3,
+        "byte_column": 0
+      },
+      "end": {
+        "line": 3,
+        "byte_column": 7
+      },
+      "cst_node_id": 7,
+      "cst_node_type": "identifier",
+      "source_sha256": "7a40ffcceb22a7af306be3b2ca121e46f2b44f8d1515dda9dc3c843094b4ecc8",
+      "evidence": "api_key = [valor omitido]",
+      "explanation": "Se asigna un literal a un identificador de credencial; revisar si debe provenir de configuración segura."
+    },
+    {
+      "rule_id": "SEG-01",
+      "title": "Consulta SQL construida con entrada externa",
+      "severity": "high",
+      "confidence": "pattern",
+      "path": "backend/check.py",
+      "language": "python",
+      "start": {
+        "line": 8,
+        "byte_column": 4
+      },
+      "end": {
+        "line": 8,
+        "byte_column": 25
+      },
+      "cst_node_id": 52,
+      "cst_node_type": "call",
+      "source_sha256": "7a40ffcceb22a7af306be3b2ca121e46f2b44f8d1515dda9dc3c843094b4ecc8",
+      "evidence": "cursor.execute(query)",
+      "explanation": "Una entrada externa participa en la construcción de una consulta SQL ejecutada por una API soportada. Usar parámetros enlazados."
+    },
+    {
+      "rule_id": "SEG-02",
+      "title": "Comando de shell construido con entrada externa",
+      "severity": "high",
+      "confidence": "pattern",
+      "path": "backend/check.py",
+      "language": "python",
+      "start": {
+        "line": 9,
+        "byte_column": 4
+      },
+      "end": {
+        "line": 9,
+        "byte_column": 49
+      },
+      "cst_node_id": 62,
+      "cst_node_type": "call",
+      "source_sha256": "7a40ffcceb22a7af306be3b2ca121e46f2b44f8d1515dda9dc3c843094b4ecc8",
+      "evidence": "subprocess.run('echo ' + user_id, shell=True)",
+      "explanation": "Una entrada externa participa en un comando ejecutado mediante shell. Usar argumentos separados y evitar shell."
+    },
+    {
+      "rule_id": "ARQ-01",
+      "title": "Ciclo nuevo entre módulos",
+      "severity": "medium",
+      "confidence": "graph",
+      "path": "data/repo.ts",
+      "language": "typescript",
+      "start": {
+        "line": 1,
+        "byte_column": 0
+      },
+      "end": {
+        "line": 1,
+        "byte_column": 38
+      },
+      "cst_node_id": 1,
+      "cst_node_type": "import_statement",
+      "source_sha256": "1def01c0439abd1bf42352f00c9446a94992afdd2ff000bf85ea62f410b6d891",
+      "evidence": "import { screen } from '../ui/screen';",
+      "explanation": "Una dependencia añadida crea un ciclo respecto de la versión base.",
+      "affected_paths": [
+        "data/repo.ts",
+        "ui/screen.ts"
+      ]
+    },
+    {
+      "rule_id": "SEG-01",
+      "title": "Consulta SQL construida con entrada externa",
+      "severity": "high",
+      "confidence": "pattern",
+      "path": "frontend/api.ts",
+      "language": "typescript",
+      "start": {
+        "line": 3,
+        "byte_column": 2
+      },
+      "end": {
+        "line": 3,
+        "byte_column": 54
+      },
+      "cst_node_id": 38,
+      "cst_node_type": "call_expression",
+      "source_sha256": "3eba338ccf1ce0387cbcc8a2349c298ea4816a6ce9cdafa7a757e92a3c038f18",
+      "evidence": "db.query(`SELECT * FROM users WHERE name='${name}'`)",
+      "explanation": "Una entrada externa participa en la construcción de una consulta SQL ejecutada por una API soportada. Usar parámetros enlazados."
+    },
+    {
+      "rule_id": "ARQ-02",
+      "title": "Dependencia nueva prohibida entre capas",
+      "severity": "medium",
+      "confidence": "graph",
+      "path": "ui/screen.ts",
+      "language": "typescript",
+      "start": {
+        "line": 1,
+        "byte_column": 0
+      },
+      "end": {
+        "line": 1,
+        "byte_column": 37
+      },
+      "cst_node_id": 1,
+      "cst_node_type": "import_statement",
+      "source_sha256": "6b98ec704283d97d268e985eccb0cbe5e744839736bf2c8546ef18ea94cca6be",
+      "evidence": "import { value } from '../data/repo';",
+      "explanation": "La importación nueva viola la política explícita de capas.",
+      "affected_paths": [
+        "ui/screen.ts",
+        "data/repo.ts"
+      ]
+    }
+  ],
+  "issues": [],
+  "excluded": [],
+  "notes": [
+    "SEG-01/02: flujo local a una función y APIs soportadas; no hay prueba de seguridad ni análisis global de datos.",
+    "SEG-03: heurística de literales; el reporte omite el valor de posibles credenciales."
+  ]
+}

@@ -1,0 +1,4 @@
+[console_scripts]
+safecode-core = safecode_core.cli:main
+safecode-cst = safecode_core.cst_cli:main
+safecode-graph = safecode_core.graph_cli:main
