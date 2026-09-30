@@ -1,0 +1,19 @@
+{
+  "view.overview": "Overview",
+  "view.files": "Files and relationships",
+  "view.graph": "Project graph",
+  "view.findings": "Findings",
+  "command.analyze": "SafeCode: Analyze project",
+  "command.workspace": "SafeCode: Choose open folder",
+  "command.openFile": "SafeCode: Open file",
+  "command.focusGraph": "SafeCode: Show in graph",
+  "command.openFinding": "SafeCode: Open finding",
+  "command.python": "SafeCode: Choose Python",
+  "command.export": "SafeCode: Export HTML report",
+  "command.language": "SafeCode: Choose language",
+  "setting.pythonPath": "Path to Python with tree-sitter, its grammars, and networkx. In VS Code Flatpak it runs on the host through flatpak-spawn.",
+  "setting.baselinePath": "Baseline directory for detecting new cycles and dependencies; absolute or relative to the open folder.",
+  "setting.policyPath": "Layer policy JSON file; requires baselinePath.",
+  "setting.analyzeOnSave": "Update the analysis when a file in the selected folder is saved.",
+  "setting.language": "SafeCode Studio interface language. Auto follows the VS Code display language."
+}

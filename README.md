@@ -2,6 +2,10 @@
 
 Motor local con una etapa independiente de Tree-sitter para Python, JavaScript y TypeScript. Recibe una ruta de archivo y devuelve su CST sin ejecutar código. El nuevo motor de NetworkX analiza directorios en los tres lenguajes y exporta JSON o un visor HTML local.
 
+## Extensión de VS Code
+
+`apps/vscode-extension` contiene la integración TypeScript: resumen, barra lateral de archivos, grafo y hallazgos; actualización al guardar; detalle junto al editor y diagnósticos SafeCode en **Problemas**. Permite elegir inglés o español desde el resumen y marca con color los archivos y carpetas que contienen hallazgos. El paquete local instalable está en `dist/safecode-studio-0.1.3.vsix`. [Instalación, configuración y límites](apps/vscode-extension/README.md).
+
 ## Grafo multilenguaje
 
 ```bash
@@ -73,6 +77,6 @@ La CLI escribe JSON a stdout. Puede redirigirse a un archivo local. Los informes
 
 El CST verifica la estructura sintáctica, no demuestra seguridad ni corrección del programa. Se resuelven dependencias de módulos, no valores ni llamadas. `from module import name` solo verifica el módulo o submódulo resoluble, no que un símbolo exportado exista. Las importaciones se consideran dependencias potenciales aunque estén dentro de condiciones o funciones.
 
-La extensión de VS Code, IA y actualización incremental dentro de un archivo mediante `Tree.edit` todavía no están implementadas. La sesión incremental por archivo y el proceso local JSON-RPC sí están disponibles. Las reglas deterministas iniciales tienen cobertura acotada a patrones explícitos. Python 3.14 fue probado en este equipo; Python 3.11 es el mínimo declarado y requiere su propia validación antes de publicar.
+La integración inicial con VS Code, la sesión incremental por archivo y el proceso local JSON-RPC están disponibles. La IA y actualización incremental dentro de un archivo mediante `Tree.edit` todavía no están implementadas. Las reglas deterministas iniciales tienen cobertura acotada a patrones explícitos. Python 3.14 fue probado en este equipo; Python 3.11 es el mínimo declarado y requiere su propia validación antes de publicar.
 
 Más detalles: [arquitectura del core](docs/core-engine.md).

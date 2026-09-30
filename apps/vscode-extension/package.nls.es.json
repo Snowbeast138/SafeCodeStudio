@@ -1,0 +1,19 @@
+{
+  "view.overview": "Resumen",
+  "view.files": "Archivos y relaciones",
+  "view.graph": "Grafo del proyecto",
+  "view.findings": "Hallazgos",
+  "command.analyze": "SafeCode: Analizar proyecto",
+  "command.workspace": "SafeCode: Elegir carpeta abierta",
+  "command.openFile": "SafeCode: Abrir archivo",
+  "command.focusGraph": "SafeCode: Mostrar en grafo",
+  "command.openFinding": "SafeCode: Abrir hallazgo",
+  "command.python": "SafeCode: Elegir Python",
+  "command.export": "SafeCode: Exportar reporte HTML",
+  "command.language": "SafeCode: Elegir idioma",
+  "setting.pythonPath": "Ruta al Python con tree-sitter, sus gramáticas y networkx. En VS Code Flatpak se ejecuta en el host mediante flatpak-spawn.",
+  "setting.baselinePath": "Directorio base para detectar ciclos y dependencias nuevas; puede ser absoluto o relativo a la carpeta abierta.",
+  "setting.policyPath": "Archivo JSON de política de capas; requiere baselinePath.",
+  "setting.analyzeOnSave": "Actualizar el análisis al guardar un archivo de la carpeta seleccionada.",
+  "setting.language": "Idioma de la interfaz de SafeCode Studio. Auto usa el idioma de VS Code."
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 52" fill="none" role="img" aria-label="SafeCode Studio">
+  <path d="M22 4 4 10v18c0 10 6 16 20 22 14-6 20-12 20-22V10L26 4" stroke="#1671ac" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M26 4 44 10v18c0 3-1 6-2 9" stroke="#34ac96" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M22 4V2a3 3 0 0 1 6 0v5" stroke="#1671ac" stroke-width="2.6"/>
+  <rect x="19" y="6" width="12" height="11" rx="2" fill="#269aa9"/>
+  <circle cx="25" cy="10" r="1.5" fill="white"/><path d="M25 11v3" stroke="white" stroke-width="1.5"/>
+  <path d="M25 17v8m0 0-8 5m8-5 8 5" stroke="#269aa9" stroke-width="2.3" stroke-linecap="round"/>
+  <circle cx="17" cy="30" r="2.4" fill="#39b784"/><circle cx="25" cy="25" r="2.4" fill="#269aa9"/><circle cx="33" cy="30" r="2.4" fill="#1671ac"/>
+  <path d="m18 37-4 3 4 3m12-6 4 3-4 3m-3-7-3 9" stroke="#1671ac" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

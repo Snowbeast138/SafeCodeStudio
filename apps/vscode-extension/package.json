@@ -1,0 +1,166 @@
+{
+  "name": "safecode-studio",
+  "displayName": "SafeCode Studio",
+  "description": "CST, dependency graph and deterministic security diagnostics in VS Code",
+  "version": "0.1.3",
+  "publisher": "safecode-studio",
+  "private": true,
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "icon": "media/logo.png",
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "onView:safecode.overview",
+    "onView:safecode.files",
+    "onView:safecode.graph",
+    "onView:safecode.findings",
+    "onCommand:safecode.analyze"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    },
+    "virtualWorkspaces": false
+  },
+  "scripts": {
+    "build": "node scripts/copy-core.mjs && tsc -p .",
+    "check": "tsc -p . --noEmit",
+    "test": "npm run build && node --test test/*.test.cjs"
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "safecode",
+          "title": "SafeCode",
+          "icon": "media/safecode.svg"
+        }
+      ]
+    },
+    "views": {
+      "safecode": [
+        {
+          "id": "safecode.overview",
+          "name": "%view.overview%",
+          "type": "webview"
+        },
+        {
+          "id": "safecode.files",
+          "name": "%view.files%"
+        },
+        {
+          "id": "safecode.graph",
+          "name": "%view.graph%",
+          "type": "webview"
+        },
+        {
+          "id": "safecode.findings",
+          "name": "%view.findings%"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "safecode.analyze",
+        "title": "%command.analyze%",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "safecode.selectWorkspace",
+        "title": "%command.workspace%",
+        "icon": "$(folder-opened)"
+      },
+      {
+        "command": "safecode.openFile",
+        "title": "%command.openFile%"
+      },
+      {
+        "command": "safecode.focusGraph",
+        "title": "%command.focusGraph%",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "safecode.openFinding",
+        "title": "%command.openFinding%"
+      },
+      {
+        "command": "safecode.selectPython",
+        "title": "%command.python%"
+      },
+      {
+        "command": "safecode.exportReport",
+        "title": "%command.export%"
+      },
+      {
+        "command": "safecode.chooseLanguage",
+        "title": "%command.language%"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "safecode.analyze",
+          "when": "view == safecode.files || view == safecode.findings",
+          "group": "navigation@1"
+        },
+        {
+          "command": "safecode.selectWorkspace",
+          "when": "view == safecode.files",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "safecode.focusGraph",
+          "when": "view == safecode.files && viewItem == safecodeFile",
+          "group": "inline"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "SafeCode Studio",
+      "properties": {
+        "safecode.pythonPath": {
+          "type": "string",
+          "default": "",
+          "description": "%setting.pythonPath%"
+        },
+        "safecode.baselinePath": {
+          "type": "string",
+          "default": "",
+          "description": "%setting.baselinePath%"
+        },
+        "safecode.policyPath": {
+          "type": "string",
+          "default": "",
+          "description": "%setting.policyPath%"
+        },
+        "safecode.analyzeOnSave": {
+          "type": "boolean",
+          "default": true,
+          "description": "%setting.analyzeOnSave%"
+        },
+        "safecode.language": {
+          "type": "string",
+          "enum": ["auto", "es", "en"],
+          "default": "auto",
+          "description": "%setting.language%"
+        }
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "@types/vscode": "1.100.0",
+    "@vscode/vsce": "^4.0.0",
+    "typescript": "^7.0.2"
+  }
+}
