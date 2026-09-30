@@ -32,3 +32,24 @@ test('Spanish remains available when selected', () => {
   assert.match(html, /Reporte de análisis/);
   assert.match(html, /Credencial literal/);
 });
+
+test('complete-for-supported-scope is not displayed as partial', () => {
+  const complete = { ...result, status: 'complete_for_supported_scope', baseline: { kind: 'git', ref: 'HEAD', commit: 'abc123456789' } };
+  const overview = overviewHtml('', complete, 'sample', undefined, 'en');
+  const report = reportHtml('', 'sample', complete, 'en');
+  assert.match(overview, /complete for supported scope/);
+  assert.match(overview, /HEAD · abc12345/);
+  assert.match(report, /Comparison baseline: HEAD/);
+  assert.doesNotMatch(report, /status partial/);
+});
+
+test('overview explains which setup is missing for architecture rules', () => {
+  const missingBaseline = overviewHtml('', result, 'sample', undefined, 'en');
+  assert.match(missingBaseline, /ARQ-01 has not been evaluated/);
+  assert.match(missingBaseline, /switching branches in VS Code does not configure the baseline/);
+  assert.match(missingBaseline, /data-command="baseline"/);
+  const withBaseline = overviewHtml('', { ...result, baseline: { kind: 'git', ref: 'main', commit: 'abc123456789' },
+    coverage: { 'SEG-03': 'analyzed', 'ARQ-01': 'analyzed', 'ARQ-02': 'skipped' } }, 'sample', undefined, 'en');
+  assert.match(withBaseline, /ARQ-02 has not been evaluated/);
+  assert.match(withBaseline, /data-command="policy"/);
+});

@@ -30,6 +30,13 @@ test('manifest contributes sidebar graph, files, findings and commands', () => {
   assert.ok(manifest.contributes.commands.some(command => command.command === 'safecode.analyze'));
   assert.ok(manifest.contributes.commands.some(command => command.command === 'safecode.selectPython'));
   assert.ok(manifest.contributes.commands.some(command => command.command === 'safecode.chooseLanguage'));
+  assert.ok(manifest.contributes.commands.some(command => command.command === 'safecode.configureGitBaseline'));
+  assert.ok(manifest.contributes.commands.some(command => command.command === 'safecode.configureLayerPolicy'));
+  assert.equal(manifest.contributes.configuration.properties['safecode.gitBaselineRef'].default, '');
+  for (const key of ['pythonPath', 'baselinePath', 'gitBaselineRef', 'policyPath', 'analyzeOnSave']) {
+    assert.equal(manifest.contributes.configuration.properties[`safecode.${key}`].scope, 'resource',
+      `${key} must support workspace folder settings`);
+  }
   assert.deepEqual(manifest.contributes.configuration.properties['safecode.language'].enum, ['auto', 'es', 'en']);
   assert.equal(manifest.contributes.viewsContainers.activitybar[0].icon, 'media/safecode.svg');
   for (const severity of ['error', 'warning']) {

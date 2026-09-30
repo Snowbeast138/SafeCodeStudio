@@ -147,10 +147,23 @@ export class FindingsTreeProvider implements vscode.TreeDataProvider<FindingEntr
   getTreeItem(entry: FindingEntry): vscode.TreeItem {
     if (entry.kind === 'empty') return new vscode.TreeItem(entry.label);
     if (entry.kind === 'rule') {
-      const status = this.coverage[entry.id] === 'skipped' ? tx(this.language, ' · omitida', ' · skipped') : '';
+      const skipped = this.coverage[entry.id] === 'skipped';
+      const status = skipped ? tx(this.language, ' · omitida', ' · skipped') : '';
       const item = new vscode.TreeItem(`${entry.id} · ${entry.title} (${entry.findings.length})${status}`,
         entry.findings.length ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
-      item.iconPath = new vscode.ThemeIcon(entry.findings.length ? 'warning' : 'check');
+      item.iconPath = skipped ? new vscode.ThemeIcon('circle-slash', new vscode.ThemeColor('descriptionForeground'))
+        : new vscode.ThemeIcon(entry.findings.length ? 'warning' : 'check');
+      if (skipped && entry.id === 'ARQ-01') {
+        item.tooltip = tx(this.language,
+          'Sin evaluar: selecciona una revisión en Base Git para comparar con los archivos actuales. Haz clic para configurarla.',
+          'Not evaluated: select a Git baseline to compare with the current files. Click to configure it.');
+        item.command = { command: 'safecode.configureGitBaseline', title: tx(this.language, 'Configurar base Git', 'Configure Git baseline') };
+      } else if (skipped && entry.id === 'ARQ-02') {
+        item.tooltip = tx(this.language,
+          'Sin evaluar: necesita una base y una política de capas. Haz clic para configurarlas.',
+          'Not evaluated: requires a baseline and a layer policy. Click to configure them.');
+        item.command = { command: 'safecode.configureLayerPolicy', title: tx(this.language, 'Configurar política de capas', 'Configure layer policy') };
+      }
       return item;
     }
     const finding = entry.finding;

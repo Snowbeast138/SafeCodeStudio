@@ -18,9 +18,11 @@ export class WorkerClient implements vscode.Disposable {
     baseline: string | undefined, policy: string | undefined,
     private readonly output: vscode.OutputChannel,
     private language: Language = 'es',
+    gitBaselineRef?: string,
   ) {
     const args = ['-u', '-m', 'safecode_core.workspace_cli', root];
     if (baseline) args.push('--baseline', baseline);
+    if (gitBaselineRef) args.push('--git-baseline-ref', gitBaselineRef);
     if (policy) args.push('--policy', policy);
     const bundled = path.join(extensionPath, 'python');
     const development = path.resolve(extensionPath, '../../packages/core/src');

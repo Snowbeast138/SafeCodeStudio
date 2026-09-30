@@ -4,7 +4,13 @@ La extensión añade el icono **SafeCode** a la barra de actividad con un resume
 
 ## Instalar el paquete local
 
-En VS Code, abra **Extensiones** → menú `…` → **Install from VSIX…** y seleccione `dist/safecode-studio-0.1.3.vsix` desde la raíz del repositorio SafeCode. Abra después el proyecto que quiere analizar. Para `menasa`, la extensión detecta el entorno virtual de SafeCode en la carpeta hermana. Si no lo encuentra, use **SafeCode: Elegir Python** y seleccione `/home/snow/Desktop/Projects/SafeCode/.venv/bin/python`. El VSIX incluye el código del Core Engine; el intérprete debe tener instaladas sus dependencias Python.
+En VS Code, abra **Extensiones** → menú `…` → **Install from VSIX…** y seleccione `dist/safecode-studio-0.1.7.vsix` desde la raíz del repositorio SafeCode. Abra después el proyecto que quiere analizar. Para `menasa`, la extensión detecta el entorno virtual de SafeCode en la carpeta hermana. Si no lo encuentra, use **SafeCode: Elegir Python** y seleccione `/home/snow/Desktop/Projects/SafeCode/.venv/bin/python`. El VSIX incluye el código del Core Engine; el intérprete debe tener instaladas sus dependencias Python.
+
+## Comparación Git y política de capas
+
+En **Resumen**, pulse **Base Git / Git baseline** y elija `HEAD`, una rama, una etiqueta o un commit. SafeCode analiza esa revisión como versión base sin hacer checkout ni modificar los archivos abiertos. El resumen muestra la referencia y el commit exacto usados. Si prefiere una carpeta base, mantenga `safecode.gitBaselineRef` vacío y configure `safecode.baselinePath`.
+
+Pulse **Política de capas / Layer policy** para seleccionar la carpeta que importa y la carpeta a la que no debe importar. La extensión crea o actualiza `.safecode-policy.json` en el proyecto, añade una regla `forbidden` y configura `safecode.policyPath`. Puede editar el JSON después; al guardarlo se reinicia el motor para cargar las reglas nuevas. ARQ-01 requiere una base; ARQ-02 requiere además la política. Las cinco reglas se muestran como evaluadas solo cuando existe una base y una política válidas. Un estado completo significa *completo en el alcance soportado*, no que el proyecto sea seguro.
 
 ## Idioma de la extensión
 
@@ -32,7 +38,7 @@ Si inicia la extensión desde este repositorio, el proyecto de ejemplo `examples
 - El resumen permite analizar, elegir Python y exportar un reporte HTML con las reglas ejecutadas y la evidencia de cada hallazgo.
 - Los diagnósticos de `SafeCode` aparecen en **Problemas** y en el editor, como los de un linter. SEG-01 y SEG-02 se publican como errores; SEG-03 y las reglas de arquitectura como advertencias. La colección se sustituye en cada análisis; los hallazgos resueltos desaparecen.
 - Guardar un archivo de la carpeta seleccionada provoca un análisis nuevo si `safecode.analyzeOnSave` está activado. Las respuestas viejas se descartan según la versión de la sesión.
-- Si faltan la base o la política, las reglas ARQ correspondientes figuran como omitidas. Un fallo del proceso se muestra como error y no como un análisis limpio.
+- Si faltan la base o la política, las reglas ARQ correspondientes figuran como omitidas. Un fallo del proceso se muestra como error y no como un análisis limpio. El informe exportado incluye la base y el estado de cada regla.
 
 La integración usa la API nativa `DiagnosticCollection` de VS Code. ESLint se limita a JavaScript/TypeScript y no puede representar por sí solo las reglas Python o de grafo; SafeCode publica diagnósticos propios para las cinco familias, sin duplicar reglas en otro motor. Puede utilizarse junto a la extensión ESLint habitual.
 

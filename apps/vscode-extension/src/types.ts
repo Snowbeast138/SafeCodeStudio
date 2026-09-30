@@ -17,6 +17,7 @@ export interface GraphSnapshot {
 }
 export interface AnalysisResult {
   request_id: string | number; workspace_id: string; version: number; status: string;
+  baseline?: { kind: 'git'; ref: string; commit: string } | { kind: 'directory'; path: string } | null;
   coverage: Record<string, string>;
   findings: Finding[];
   issues: unknown[];

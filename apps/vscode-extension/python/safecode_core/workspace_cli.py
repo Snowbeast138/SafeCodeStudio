@@ -69,10 +69,12 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description='Persistent SafeCode workspace process (JSON-RPC lines on stdin/stdout)')
     parser.add_argument('root')
     parser.add_argument('--baseline')
+    parser.add_argument('--git-baseline-ref')
     parser.add_argument('--policy')
     args = parser.parse_args(argv)
     try:
-        engine = WorkspaceEngine(args.root, baseline=args.baseline, policy=args.policy)
+        engine = WorkspaceEngine(args.root, baseline=args.baseline, policy=args.policy,
+                                 git_baseline_ref=args.git_baseline_ref)
     except (OSError, ValueError) as exc:
         print(str(exc), file=sys.stderr)
         return 2

@@ -12,6 +12,16 @@ export function tx(language: Language, spanish: string, english: string): string
   return language === 'es' ? spanish : english;
 }
 
+export function isCompleteStatus(status: string): boolean {
+  return status === 'complete_for_supported_scope' || status === 'complete';
+}
+
+export function statusLabel(language: Language, status: string): string {
+  return isCompleteStatus(status)
+    ? tx(language, 'completo en el alcance soportado', 'complete for supported scope')
+    : tx(language, 'parcial', 'partial');
+}
+
 const FINDINGS: Record<string, { title: string; explanation: string }> = {
   'SEG-01': { title: 'SQL query built from external input', explanation: 'External input is used to build a SQL query executed by a supported API. Use bound parameters.' },
   'SEG-02': { title: 'Shell command built from external input', explanation: 'External input is used in a command executed through a shell. Pass arguments separately and avoid shell execution.' },

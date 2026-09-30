@@ -1,5 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import * as vscode from 'vscode';
 import { publishDiagnostics } from './diagnostics';
 import { GraphViewProvider } from './graphView';
@@ -9,7 +11,9 @@ import { findingHtml, OverviewProvider, reportHtml } from './panels';
 import { resolvePython } from './pythonRuntime';
 import { AnalysisResult, Finding, GraphSnapshot } from './types';
 import { WorkerClient } from './worker';
-import { Language, resolveLanguage, tx } from './i18n';
+import { Language, resolveLanguage, statusLabel, tx } from './i18n';
+
+const execFileAsync = promisify(execFile);
 
 class SafeCodeController implements vscode.Disposable {
   private readonly files = new FileTreeProvider();
@@ -33,6 +37,7 @@ class SafeCodeController implements vscode.Disposable {
   private language: Language = 'es';
   private fileView?: vscode.TreeView<any>;
   private findingView?: vscode.TreeView<any>;
+  private updatingSetup = false;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.files.setIconRoot(path.join(context.extensionPath, 'media'));
@@ -51,6 +56,8 @@ class SafeCodeController implements vscode.Disposable {
       vscode.commands.registerCommand('safecode.selectPython', () => this.selectPython()),
       vscode.commands.registerCommand('safecode.exportReport', () => this.exportReport()),
       vscode.commands.registerCommand('safecode.chooseLanguage', () => this.chooseLanguage()),
+      vscode.commands.registerCommand('safecode.configureGitBaseline', () => this.configureGitBaseline()),
+      vscode.commands.registerCommand('safecode.configureLayerPolicy', () => this.configureLayerPolicy()),
       vscode.commands.registerCommand('safecode.selectWorkspace', () => this.selectWorkspace()),
       vscode.commands.registerCommand('safecode.openFile', (relative: string) => this.openFile(relative)),
       vscode.commands.registerCommand('safecode.openFinding', (finding: Finding) => this.openFinding(finding)),
@@ -60,7 +67,11 @@ class SafeCodeController implements vscode.Disposable {
       }),
       vscode.workspace.onDidSaveTextDocument(document => {
         if (this.folder && this.isInside(document.uri, this.folder) &&
-            vscode.workspace.getConfiguration('safecode').get<boolean>('analyzeOnSave', true)) void this.analyze();
+            vscode.workspace.getConfiguration('safecode').get<boolean>('analyzeOnSave', true)) {
+          const policy = this.configuredPath(vscode.workspace.getConfiguration('safecode', this.folder.uri).get<string>('policyPath', ''), this.folder.uri.fsPath);
+          if (policy && path.resolve(document.uri.fsPath) === policy) this.restart();
+          void this.analyze();
+        }
       }),
       vscode.workspace.onDidChangeWorkspaceFolders(() => {
         if (!this.folder) { this.folder = vscode.workspace.workspaceFolders?.[0]; if (this.folder) void this.analyze(); return; }
@@ -70,7 +81,7 @@ class SafeCodeController implements vscode.Disposable {
       }),
       vscode.workspace.onDidChangeConfiguration(event => {
         if (event.affectsConfiguration('safecode.language')) this.applyLanguage();
-        if (['pythonPath', 'baselinePath', 'policyPath'].some(key => event.affectsConfiguration('safecode.' + key))) {
+        if (!this.updatingSetup && ['pythonPath', 'baselinePath', 'gitBaselineRef', 'policyPath'].some(key => event.affectsConfiguration('safecode.' + key))) {
           this.restart(); void this.analyze();
         }
       }),
@@ -102,7 +113,7 @@ class SafeCodeController implements vscode.Disposable {
     if (this.lastResult && this.folder) {
       void publishDiagnostics(this.diagnostics, this.folder, this.lastResult.findings, this.language);
       this.status.text = `$(shield) SafeCode: ${this.lastResult.metrics.findings} ${tx(this.language, 'hallazgos', 'findings')}`;
-      this.status.tooltip = `${this.folder.name}: ${this.lastResult.metrics.files} ${tx(this.language, 'archivos', 'files')} · ${this.lastResult.status === 'complete' ? tx(this.language, 'completo', 'complete') : tx(this.language, 'parcial', 'partial')}`;
+      this.status.tooltip = `${this.folder.name}: ${this.lastResult.metrics.files} ${tx(this.language, 'archivos', 'files')} · ${statusLabel(this.language, this.lastResult.status)}`;
     } else this.status.tooltip = tx(this.language, 'Analizar la carpeta con SafeCode', 'Analyze the folder with SafeCode');
     if (this.lastFinding && this.detailPanel) this.detailPanel.webview.html = findingHtml(this.logo, this.lastFinding, this.lastSnapshot, this.language);
   }
@@ -117,6 +128,102 @@ class SafeCodeController implements vscode.Disposable {
     if (!chosen) return;
     await vscode.workspace.getConfiguration('safecode').update('language', chosen.value, vscode.ConfigurationTarget.Global);
     this.applyLanguage();
+  }
+
+  private async git(root: string, ...args: string[]): Promise<string> {
+    const { stdout } = await execFileAsync('git', ['-C', root, ...args], { timeout: 15_000, maxBuffer: 1_000_000 });
+    return stdout.trim();
+  }
+
+  private async updateSetup(folder: vscode.WorkspaceFolder, changes: [string, string][]): Promise<boolean> {
+    this.updatingSetup = true;
+    try {
+      const config = vscode.workspace.getConfiguration('safecode', folder.uri);
+      for (const [key, value] of changes) {
+        if (config.get<string>(key, '') === value) continue;
+        const target = config.inspect<string>(key)?.workspaceFolderValue === undefined
+          ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.WorkspaceFolder;
+        await config.update(key, value, target);
+      }
+      const saved = vscode.workspace.getConfiguration('safecode', folder.uri);
+      for (const [key, value] of changes) {
+        if (saved.get<string>(key, '') !== value) throw new Error(tx(this.language,
+          `No se pudo guardar safecode.${key} para este proyecto.`,
+          `Could not save safecode.${key} for this project.`));
+      }
+    } catch (error) { this.reportError(error); return false; }
+    finally { this.updatingSetup = false; }
+    this.restart();
+    await this.analyze();
+    return true;
+  }
+
+  private async configureGitBaseline(): Promise<boolean> {
+    const folder = this.folder || vscode.workspace.workspaceFolders?.[0];
+    if (!folder) { void vscode.window.showInformationMessage(tx(this.language, 'Abre un proyecto antes de configurar Git.', 'Open a project before configuring Git.')); return false; }
+    let refs: string[];
+    try {
+      await this.git(folder.uri.fsPath, 'rev-parse', '--show-toplevel');
+      refs = (await this.git(folder.uri.fsPath, 'for-each-ref', '--format=%(refname:short)', 'refs/heads', 'refs/remotes', 'refs/tags'))
+        .split('\n').filter(Boolean).filter(ref => !ref.endsWith('/HEAD')).slice(0, 60);
+    } catch (error) { this.reportError(error); return false; }
+    const options = [
+      { label: 'HEAD', description: tx(this.language, 'Último commit actual', 'Current latest commit'), value: 'HEAD' },
+      ...refs.filter(ref => ref !== 'HEAD').map(ref => ({ label: ref, description: '', value: ref })),
+      { label: tx(this.language, 'Introducir commit o rama…', 'Enter commit or branch…'), description: '', value: '__custom__' },
+      { label: tx(this.language, 'Desactivar comparación Git', 'Disable Git comparison'), description: '', value: '' },
+    ];
+    const selected = await vscode.window.showQuickPick(options, { placeHolder: tx(this.language, 'Selecciona la versión base del proyecto', 'Select the project baseline') });
+    if (!selected) return false;
+    let ref = selected.value;
+    if (ref === '__custom__') {
+      ref = await vscode.window.showInputBox({ prompt: tx(this.language, 'Rama, etiqueta o commit de Git', 'Git branch, tag, or commit'), value: 'HEAD' }) || '';
+      if (!ref) return false;
+    }
+    if (ref) {
+      try { await this.git(folder.uri.fsPath, 'rev-parse', '--verify', '--end-of-options', ref + '^{commit}'); }
+      catch { void vscode.window.showErrorMessage(tx(this.language, 'La referencia Git no apunta a un commit válido.', 'The Git ref does not resolve to a valid commit.')); return false; }
+    }
+    const saved = await this.updateSetup(folder, [
+      ['baselinePath', ''], ['gitBaselineRef', ref],
+      ...(ref ? [] : [['policyPath', '']] as [string, string][]),
+    ]);
+    return saved && Boolean(ref);
+  }
+
+  private async configureLayerPolicy(): Promise<void> {
+    const folder = this.folder || vscode.workspace.workspaceFolders?.[0];
+    if (!folder) { void vscode.window.showInformationMessage(tx(this.language, 'Abre un proyecto antes de configurar la política.', 'Open a project before configuring a policy.')); return; }
+    const config = vscode.workspace.getConfiguration('safecode', folder.uri);
+    if (!config.get<string>('baselinePath', '').trim() && !config.get<string>('gitBaselineRef', '').trim()) {
+      if (!await this.configureGitBaseline()) return;
+    }
+    if (!this.lastSnapshot) await this.analyze();
+    const directories = this.lastSnapshot?.directories.map(item => item.path).filter(item => item !== '.') || [];
+    if (!directories.length) { void vscode.window.showInformationMessage(tx(this.language, 'No se encontraron carpetas para crear una regla.', 'No folders were found for a layer rule.')); return; }
+    const choices = directories.map(directory => ({ label: directory, pattern: `${directory}/*` }));
+    const source = await vscode.window.showQuickPick(choices, { placeHolder: tx(this.language, 'Carpeta que importa (origen)', 'Importing folder (source)') });
+    if (!source) return;
+    const target = await vscode.window.showQuickPick(choices, { placeHolder: tx(this.language, 'Carpeta que NO debe importar (destino)', 'Folder that must NOT be imported (target)') });
+    if (!target) return;
+    const uri = vscode.Uri.file(path.join(folder.uri.fsPath, '.safecode-policy.json'));
+    let policy: { forbidden: { from: string; to: string }[] } = { forbidden: [] };
+    try {
+      const data = await vscode.workspace.fs.readFile(uri);
+      const parsed = JSON.parse(Buffer.from(data).toString('utf8'));
+      if (!Array.isArray(parsed?.forbidden)) throw new Error('invalid policy');
+      policy = parsed;
+    } catch (error) {
+      if (!(error instanceof vscode.FileSystemError && error.code === 'FileNotFound')) {
+        void vscode.window.showErrorMessage(tx(this.language, 'La política existente no es un JSON válido con una lista forbidden.', 'The existing policy is not valid JSON with a forbidden list.'));
+        return;
+      }
+    }
+    if (!policy.forbidden.some(rule => rule.from === source.pattern && rule.to === target.pattern))
+      policy.forbidden.push({ from: source.pattern, to: target.pattern });
+    await vscode.workspace.fs.writeFile(uri, Buffer.from(JSON.stringify(policy, null, 2) + '\n', 'utf8'));
+    if (await this.updateSetup(folder, [['policyPath', '.safecode-policy.json']]))
+      await vscode.window.showTextDocument(uri, { preview: false });
   }
 
   private isInside(uri: vscode.Uri, folder: vscode.WorkspaceFolder): boolean {
@@ -175,11 +282,13 @@ class SafeCodeController implements vscode.Disposable {
   private async createWorker(folder: vscode.WorkspaceFolder): Promise<WorkerClient> {
     const config = vscode.workspace.getConfiguration('safecode', folder.uri);
     const baseline = this.configuredPath(config.get<string>('baselinePath', ''), folder.uri.fsPath);
+    const gitBaselineRef = config.get<string>('gitBaselineRef', '').trim();
     const policy = this.configuredPath(config.get<string>('policyPath', ''), folder.uri.fsPath);
-    if (policy && !baseline) throw new Error(tx(this.language, 'Configura safecode.baselinePath para usar una política de capas.', 'Set safecode.baselinePath to use a layer policy.'));
+    if (baseline && gitBaselineRef) throw new Error(tx(this.language, 'Elige una sola base: directorio o revisión Git.', 'Choose one baseline: a directory or a Git revision.'));
+    if (policy && !baseline && !gitBaselineRef) throw new Error(tx(this.language, 'Configura una base Git o safecode.baselinePath para usar una política de capas.', 'Set a Git baseline or safecode.baselinePath to use a layer policy.'));
     const python = await resolvePython(folder.uri.fsPath, this.context.extensionPath, config.get<string>('pythonPath', ''), this.language);
     return new WorkerClient(folder.uri.fsPath, python,
-      this.context.extensionPath, baseline, policy, this.output, this.language);
+      this.context.extensionPath, baseline, policy, this.output, this.language, gitBaselineRef);
   }
 
   private async analyze(): Promise<void> {
@@ -207,7 +316,7 @@ class SafeCodeController implements vscode.Disposable {
       this.lastResult = result; this.lastSnapshot = snapshot;
       this.overview.update(result, folder.name);
       this.status.text = `$(shield) SafeCode: ${result.metrics.findings} ${tx(this.language, 'hallazgos', 'findings')}`;
-      this.status.tooltip = `${folder.name}: ${result.metrics.files} ${tx(this.language, 'archivos', 'files')} · ${result.status === 'complete' ? tx(this.language, 'completo', 'complete') : tx(this.language, 'parcial', 'partial')} · ${result.metrics.parsed_files} ${tx(this.language, 'CST actualizados', 'CSTs updated')}`;
+      this.status.tooltip = `${folder.name}: ${result.metrics.files} ${tx(this.language, 'archivos', 'files')} · ${statusLabel(this.language, result.status)} · ${result.metrics.parsed_files} ${tx(this.language, 'CST actualizados', 'CSTs updated')}`;
       this.output.appendLine(tx(this.language, `Versión ${version}: ${result.metrics.files} archivos, ${result.metrics.findings} hallazgos, ${result.metrics.parsed_files} CST actualizados.`, `Version ${version}: ${result.metrics.files} files, ${result.metrics.findings} findings, ${result.metrics.parsed_files} CSTs updated.`));
     } catch (error) {
       if (this.generation !== generation || version !== this.version) return;

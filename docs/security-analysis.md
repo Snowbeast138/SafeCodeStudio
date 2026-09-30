@@ -40,5 +40,6 @@ La batería de pruebas en `packages/core/tests/test_security.py` incluye interpo
 - El flujo de datos se restringe a asignaciones y variables dentro de la misma función o módulo. No sigue llamadas entre funciones, aliases de objetos, sanitizadores ni valores de retorno.
 - Los adaptadores reconocen solo las fuentes y APIs enumeradas en el código. Una API desconocida o un nombre distinto puede pasar sin detección.
 - La regla de credenciales es una heurística léxica. Puede alertar sobre datos de prueba o ignorar claves con nombres no reconocidos. No verifica si una credencial es válida.
-- Las reglas de arquitectura comparan dos directorios; no inspeccionan automáticamente Git ni deducen la política de capas.
+- La CLI independiente `safecode-security` compara dos directorios mediante `--baseline`; no obtiene una revisión Git por sí sola.
+- La sesión incremental y la extensión de VS Code sí pueden obtener la versión base de un commit Git (`--git-baseline-ref`). La política de capas sigue siendo explícita: el asistente de la extensión ayuda a crearla, pero no la deduce automáticamente.
 - Errores sintácticos y archivos excluidos reducen la cobertura. El reporte los enumera, pero no pretende cobertura de autorización, CVEs, flujo interprocedimental o seguridad formal.

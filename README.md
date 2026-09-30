@@ -4,7 +4,7 @@ Motor local con una etapa independiente de Tree-sitter para Python, JavaScript y
 
 ## Extensión de VS Code
 
-`apps/vscode-extension` contiene la integración TypeScript: resumen, barra lateral de archivos, grafo y hallazgos; actualización al guardar; detalle junto al editor y diagnósticos SafeCode en **Problemas**. Permite elegir inglés o español desde el resumen y marca con color los archivos y carpetas que contienen hallazgos. El paquete local instalable está en `dist/safecode-studio-0.1.3.vsix`. [Instalación, configuración y límites](apps/vscode-extension/README.md).
+`apps/vscode-extension` contiene la integración TypeScript: resumen, barra lateral de archivos, grafo y hallazgos; actualización al guardar; detalle junto al editor y diagnósticos SafeCode en **Problemas**. Permite elegir inglés o español, marcar archivos y carpetas con hallazgos, y configurar una base Git y política de capas desde la interfaz. El paquete local instalable está en `dist/safecode-studio-0.1.7.vsix`. [Instalación, configuración y límites](apps/vscode-extension/README.md).
 
 ## Grafo multilenguaje
 

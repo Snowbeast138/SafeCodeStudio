@@ -11,8 +11,11 @@
   "command.python": "SafeCode: Elegir Python",
   "command.export": "SafeCode: Exportar reporte HTML",
   "command.language": "SafeCode: Elegir idioma",
+  "command.gitBaseline": "SafeCode: Configurar base Git",
+  "command.layerPolicy": "SafeCode: Configurar política de capas",
   "setting.pythonPath": "Ruta al Python con tree-sitter, sus gramáticas y networkx. En VS Code Flatpak se ejecuta en el host mediante flatpak-spawn.",
   "setting.baselinePath": "Directorio base para detectar ciclos y dependencias nuevas; puede ser absoluto o relativo a la carpeta abierta.",
+  "setting.gitBaselineRef": "Rama, etiqueta o commit de Git para comparar con el árbol de trabajo. Déjalo vacío para usar baselinePath.",
   "setting.policyPath": "Archivo JSON de política de capas; requiere baselinePath.",
   "setting.analyzeOnSave": "Actualizar el análisis al guardar un archivo de la carpeta seleccionada.",
   "setting.language": "Idioma de la interfaz de SafeCode Studio. Auto usa el idioma de VS Code."

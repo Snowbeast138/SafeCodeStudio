@@ -6,6 +6,7 @@
 from safecode_core import WorkspaceEngine
 
 engine = WorkspaceEngine('/ruta/proyecto', baseline='/ruta/version-base', policy='/ruta/policy.json')
+# Alternativa sin checkout: git_baseline_ref='HEAD' (no combinar con baseline)
 first = engine.update(request_id='scan-1', version=1)
 second = engine.update(request_id='scan-2', version=2)  # después de editar archivos
 graph = engine.graph_snapshot()  # instantánea completa sin código fuente ni CST
@@ -19,11 +20,14 @@ El proceso local usa JSON-RPC 2.0, una solicitud JSON por línea de entrada est�
 
 ```bash
 .venv/bin/python -m safecode_core.workspace_cli /ruta/proyecto --baseline /ruta/version-base --policy /ruta/policy.json
+.venv/bin/python -m safecode_core.workspace_cli /ruta/proyecto --git-baseline-ref HEAD --policy /ruta/policy.json
 ```
 
 Solicitud de análisis: `{"jsonrpc":"2.0","id":"scan-1","method":"analyze","params":{"version":1}}`. También acepta `graph` con `params.directory` opcional para obtener una instantánea sin CST ni texto fuente, y `shutdown` para cerrar. El proceso responde con errores JSON-RPC recuperables por solicitud y no escribe registros en stdout. Cada línea se limita a 1 MB.
 
 Las reglas SEG-01/02/03 usan el CST de cada archivo cambiado. ARQ-01/02 comparan el grafo vigente con una instantánea base fija proporcionada al iniciar la sesión. Sin base o política, las reglas correspondientes constan como omitidas y el estado es `partial`; un resultado sin hallazgos no prueba seguridad. La política y la base no se cambian durante una sesión: para modificarlas se crea otra instancia.
+
+La base puede provenir de un directorio o de una revisión Git, nunca de ambas a la vez. Para Git, se resuelve la referencia a un commit, se lee su árbol sin alterar el directorio de trabajo y se compara con los archivos actuales; la respuesta incluye `baseline` con referencia y commit exacto. No se extraen symlinks. La lectura está limitada a 20 000 entradas y 50 MB de código fuente materializado. El archivo de política de capas sigue siendo explícito y es necesario para ARQ-02. Si la revisión o la política cambian, reinicie la sesión.
 
 ## Verificación y límites
 

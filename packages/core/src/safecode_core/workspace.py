@@ -10,6 +10,7 @@ from pathlib import Path
 from .directory_graph import DirectoryGraphEngine
 from .incremental_graph import IncrementalDirectoryGraphEngine
 from .security import RULES, _scan_file, architecture_findings, validate_policy
+from .git_baseline import git_baseline_snapshot
 
 
 def _finding_key(finding):
@@ -50,15 +51,24 @@ def _reference_delta(previous, current):
 class WorkspaceEngine:
     """Single-worker analysis session. Call update with increasing workspace versions."""
 
-    def __init__(self, root, baseline=None, policy=None, **graph_options):
+    def __init__(self, root, baseline=None, policy=None, git_baseline_ref=None, **graph_options):
         self.root = Path(root).expanduser().resolve()
+        if baseline and git_baseline_ref:
+            raise ValueError('Choose either a baseline directory or a Git baseline ref')
         self.workspace_id = sha256(str(self.root).encode('utf-8')).hexdigest()[:16]
         self.graph_engine = IncrementalDirectoryGraphEngine(self.root, include_cst=True, **graph_options)
-        self.baseline = DirectoryGraphEngine(baseline, **graph_options).analyze() if baseline else None
+        self.baseline_info = None
+        if git_baseline_ref:
+            self.baseline, self.baseline_info = git_baseline_snapshot(self.root, git_baseline_ref, **graph_options)
+        elif baseline:
+            self.baseline = DirectoryGraphEngine(baseline, **graph_options).analyze()
+            self.baseline_info = dict(kind='directory', path=str(Path(baseline).expanduser().resolve()))
+        else:
+            self.baseline = None
         self.forbidden = None
         if policy:
             if self.baseline is None:
-                raise ValueError('A layer policy requires a baseline directory')
+                raise ValueError('A layer policy requires a baseline directory or Git revision')
             config = json.loads(Path(policy).read_text(encoding='utf-8'))
             if not isinstance(config, dict) or 'forbidden' not in config:
                 raise ValueError('Policy must contain a forbidden list')
@@ -94,7 +104,7 @@ class WorkspaceEngine:
         status = 'partial' if issues or 'skipped' in coverage.values() else 'complete_for_supported_scope'
         payload = dict(schema_version=1, request_id=request_id, workspace_id=self.workspace_id,
                        version=version, generated_at=datetime.now(timezone.utc).isoformat(),
-                       root=str(self.root), status=status, coverage=coverage,
+                       root=str(self.root), status=status, coverage=coverage, baseline=self.baseline_info,
                        changes=result.changes, graph_delta=_graph_delta(self.last_snapshot, snapshot),
                        reference_delta=_reference_delta(self.last_snapshot, snapshot),
                        findings=findings,
